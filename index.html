@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Parc Automobile</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .card {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      form {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #aaa;
+      }
+      input {
+        margin: 5px;
+      }
+      button {
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Marketplace</h1>
+
+    <div class="Section" id="Admin">
+      <h2>--------------------- ADMIN PARTIE --------------------</h2>
+    <form id="productForm">
+      <h3>Ajouter un Produit</h3>
+
+      <input id="nom" placeholder="Nom" required />
+      <input id="prix" type="number" placeholder="Prix" required />
+      <input id="stock" type="number" placeholder="Quantité" required />
+      <select id="categorie">
+        <option value="Processeurs">Processeurs</option>
+        <option value="Cartes Graphiques">Cartes Graphiques</option>
+    </select>
+
+      <button type="submit">Ajouter</button>
+      
+      
+
+    </form>
+
+    <h3>Liste des Produits</h3>
+    <div id="listeProduits"></div>
+    </div>
+
+
+    <div class="Section" id="Boutique">
+      <h2>--------------------- BOUTIQUE PARTIE --------------------</h2>
+      <h3>Liste des Produits</h3>
+      <div id="listeProduitsBoutique"></div>
+    </div>
+    <div class="Section" id="Interaction"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+   
+
+      <h4>Propriétaire</h4>
+      <input id="nomProprietaire" placeholder="Nom propriétaire" required />
+      <input id="emailProprietaire" placeholder="Email propriétaire" required />
+
+      <button type="submit">Ajouter</button>
+    </form>
+
+    
+
+    <script>
+      const API = "http://localhost:3000/api";
+
+      // Charger touts les Produits
+      async function loadData() {
+        const res = await fetch(API + "/products");
+        const produits = await res.json();
+        const container = document.getElementById("listeProduits");
+        const containerBoutique = document.getElementById("listeProduitsBoutique");
+        container.innerHTML = "";
+        // CEST POUR LA PARTIE ADMIN
+        produits.forEach((produit) => {
+          container.innerHTML += `
+            <div class="card">
+              <div>
+                <strong>${produit.nom}</strong> (${produit.stock > 0 ? "en stock" : "INDISPONIBLE"})<br>
+                Prix : ${produit.prix} €)<br>
+                Categorie : ${produit.categorie.nom}<br>
+                <strong>${produit.stock > 0 ? "Disponible" : "Plus de Stock"}</strong><br>
+              </div>
+              <div>
+                <button onclick="deleteProduct('${produit._id}')">Supprimer</button>
+              </div>
+            </div>
+          `;
+        });
+        
+        // CEST POUR LA BOUTIQUE
+        containerBoutique.innerHTML = "";
+        produits.forEach((produit) => {
+          containerBoutique.innerHTML += `
+            <div class="card">
+              <div>
+                <strong>${produit.nom}</strong> (${produit.stock > 0 ? "en stock" : "INDISPONIBLE"})<br>
+                Prix : ${produit.prix} €)<br>
+                Categorie : ${produit.categorie.nom}<br>
+                <strong>${produit.stock > 0 ? "Disponible" : "Plus de Stock"}</strong><br>
+              </div>
+              <button onclick="reviews('${produit._id}')">Avis</button>
+              <div id="reviews"></div>
+            </div>
+          `;
+        });
+      }
+
+      // Ajouter un Produit
+      document.getElementById("productForm").onsubmit = async (e) => {
+        e.preventDefault();
+
+        await fetch(API + "/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nom: document.getElementById("nom").value,
+            prix: Number(document.getElementById("prix").value),
+            stock: Number(document.getElementById("stock").value),
+            categorie: {
+              nom: document.getElementById("categorie").value,},
+          }),
+        });
+
+        e.target.reset();
+        loadData();
+      };
+
+      // Supprimer
+      async function deleteProduct(id) {
+        if (confirm("Supprimer ce produit ?")) {
+          let username = prompt(
+            "Entrer votre nom d'utilisateur"
+          );
+          await fetch(API + "/products/" + id, {
+            method: "DELETE",
+            headers: {
+              "x-admin": username,
+            },
+          });
+          loadData();
+        }
+      }
+
+      //reviews
+      async function reviews(id) {
+        const res = await fetch(API + "/reviews/" + id);
+        const reviews = await res.json();
+        console.log(reviews);
+        console.log(API + "/reviews/" + id);
+        const container = document.getElementById("reviews");
+        container.innerHTML = "";
+        reviews.forEach((review) => {
+          container.innerHTML += `
+            <div class="card">
+              <div>
+                <strong>${review.nom}</strong> (${review.date})<br>
+                Commentaire : ${review.commentaire}<br>
+              </div>
+            </div>
+          `;
+        });
+                
+      }
+
+      loadData();
+    </script>
+  </body>
+</html>
