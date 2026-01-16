@@ -98,10 +98,10 @@ app.post("/api/reviews", async (req, res) => {
 app.get("/api/reviews/:productId", async (req, res) => {
   try {
     const productId = req.params.productId;
-    console.log("test" + produit);
     const allReviews = await Reviews.findOne({ produit: productId })
       .populate("auteur", "username")
       .populate("produit", "nom");
+    console.log(allReviews);
     res.json(allReviews);
   } catch {
     res.status(500).json({ error: "Impossible d'afficher les avis" });
